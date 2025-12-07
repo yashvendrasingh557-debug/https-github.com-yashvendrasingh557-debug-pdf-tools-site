@@ -1,1 +1,46 @@
-<h1>Merge PDFs</h1><p>Feature coming soon.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Merge PDFs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        button { margin-top: 15px; padding: 10px 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <h2>Merge PDF Files</h2>
+
+    <input type="file" id="pdfFiles" accept="application/pdf" multiple><br>
+    <button onclick="mergePDFs()">Merge PDF</button>
+
+    <script>
+        async function mergePDFs() {
+            const input = document.getElementById("pdfFiles").files;
+            if (input.length < 2) {
+                alert("Select at least 2 PDF files.");
+                return;
+            }
+
+            const mergedPdf = await PDFLib.PDFDocument.create();
+
+            for (let file of input) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+            }
+
+            const mergedPdfBytes = await mergedPdf.save();
+            const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "merged.pdf";
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
